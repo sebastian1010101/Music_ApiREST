@@ -8,8 +8,11 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
   const config = new DocumentBuilder()
+    .addBearerAuth()
     .setTitle('Musicians Api')
-    .setDescription('idk')
+    .setDescription(
+      'Manage and consult information about bands, tracks, authenticated users and playlists :)',
+    )
     .setVersion('1.0')
     .addTag('')
     .build();

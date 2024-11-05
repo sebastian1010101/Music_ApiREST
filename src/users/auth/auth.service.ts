@@ -20,7 +20,7 @@ export class AuthService {
       },
     });
     if (!findEmail) {
-      throw new UnauthorizedException('Email already in use');
+      throw new UnauthorizedException('Email not found');
     }
 
     await userEntity.comparePass(findEmail.password);

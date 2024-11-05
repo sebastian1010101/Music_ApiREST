@@ -5,6 +5,7 @@ export class BandEntity extends BaseIDEntity {
   @ApiProperty({
     example: '36e722e1-ade5-4a70-bee6-b80ff9c2a40c',
     description: 'Unique uuid (v4)',
+    readOnly: true,
   })
   public declare readonly id: string;
 

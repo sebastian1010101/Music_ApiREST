@@ -26,7 +26,7 @@ export class CreateTrackDto {
 
   @IsUUID('4')
   @ApiProperty({
-    description: 'Corresponding bandId of the Track',
+    description: 'bandId of the Track, uuid v4',
   })
   bandId: string;
 }

@@ -12,7 +12,6 @@ import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { ApiBody, ApiResponse, PartialType } from '@nestjs/swagger';
 import { TrackEntity } from './entities/track.entity';
-import { BandEntity } from 'src/bands/entities/band.entity';
 
 @Controller('tracks')
 export class TracksController {
@@ -33,6 +32,7 @@ export class TracksController {
     status: 200,
     type: TrackEntity,
     isArray: true,
+    description: 'Return all tracks',
   })
   async findAll() {
     return await this.trackService.findAll();
@@ -42,6 +42,7 @@ export class TracksController {
   @ApiResponse({
     status: 200,
     type: TrackEntity,
+    description: 'Return track by Id',
   })
   async findOne(@Param('trackId') trackId: string) {
     return await this.trackService.findOne(trackId);
@@ -49,8 +50,8 @@ export class TracksController {
 
   @Patch(':trackId')
   @ApiBody({
-    type: PartialType(CreateTrackDto),
     description: 'Update a track value',
+    type: PartialType(CreateTrackDto),
   })
   @ApiResponse({
     status: 200,
@@ -66,7 +67,7 @@ export class TracksController {
   @Delete(':trackId')
   @ApiResponse({
     status: 204,
-    description: 'no content',
+    description: 'No content',
   })
   async delete(@Param('trackId') trackId: string) {
     return await this.trackService.delete(trackId);

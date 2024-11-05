@@ -1,4 +1,4 @@
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsNotEmpty, IsPositive, IsString } from 'class-validator';
 
 export class CreateBandDto {

@@ -3,7 +3,9 @@ import { IsInt, IsString, IsUUID } from 'class-validator';
 import { BaseIDEntity } from 'src/utils/base.id.entity';
 
 export class TrackEntity extends BaseIDEntity {
-  // @ApiProperty()
+  @ApiProperty({
+    readOnly: true,
+  })
   public declare readonly id: string;
 
   @IsString()

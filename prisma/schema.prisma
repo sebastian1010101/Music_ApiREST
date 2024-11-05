@@ -26,7 +26,7 @@ model Tracks {
   title String
   length Int
   bandId String @map("bandId")
-  band Bands @relation(fields: [bandId], references: [id])
+  band Bands @relation(fields: [bandId], references: [id], onDelete: Cascade)
   playlist Playlists[]
   @@map("tracks")
 }

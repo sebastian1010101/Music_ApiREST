@@ -13,8 +13,6 @@ import { UpdateBandDto } from './dto/update-band.dto';
 import {
   ApiBody,
   ApiParam,
-  ApiPartialContentResponse,
-  ApiProperty,
   ApiResponse,
   ApiTags,
   PartialType,
@@ -61,12 +59,13 @@ export class BandsController {
 
   @Patch(':bandId')
   @ApiBody({
-    description: 'update a new band value',
+    description: 'Set a new band value',
     type: PartialType(CreateBandDto),
   })
   @ApiResponse({
     status: 200,
     type: BandEntity,
+    description: 'Update band values',
   })
   async update(@Param('bandId') bandId: string, @Body() data: UpdateBandDto) {
     return await this.bandService.update(bandId, data);
@@ -75,7 +74,8 @@ export class BandsController {
   @Delete(':bandId')
   @ApiResponse({
     status: 204,
-    description: 'No body content',
+    description:
+      'No content, NOTE: if you delete a band with related tracks they will also be deleted.',
   })
   async delete(@Param('bandId') bandId: string) {
     return await this.bandService.delete(bandId);
