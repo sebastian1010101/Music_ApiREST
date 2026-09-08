@@ -12,6 +12,7 @@ export default async function globalSetup(): Promise<void> {
   process.env.MUSIC_API_E2E_DB_PATH = databasePath;
   process.env.DATABASE_URL = `file:${databasePath}`;
   process.env.JWT_SECRET = `e2e-secret-${randomUUID()}`;
+  process.env.CORS_ORIGINS = 'http://localhost:5173';
 
   execFileSync(
     process.execPath,

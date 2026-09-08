@@ -13,7 +13,7 @@ import { PlaylistsModule } from './playlists/playlists.module';
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
       validate: (config: Record<string, unknown>) => {
-        for (const key of ['DATABASE_URL', 'JWT_SECRET']) {
+        for (const key of ['DATABASE_URL', 'JWT_SECRET', 'CORS_ORIGINS']) {
           if (typeof config[key] !== 'string' || config[key].length === 0) {
             throw new Error(`${key} is required`);
           }

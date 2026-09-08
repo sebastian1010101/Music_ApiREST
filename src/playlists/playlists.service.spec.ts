@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { ForbiddenException } from '@nestjs/common';
 
 jest.mock(
@@ -22,6 +23,7 @@ jest.mock(
 );
 
 import { PlaylistsService } from './playlists.service';
+import { describe } from 'node:test';
 
 interface CorrectedPlaylistsApi {
   findAll(user: { userId: string; email: string }): Promise<unknown>;

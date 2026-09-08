@@ -32,7 +32,11 @@ Replace the placeholder JWT secret in `.env.local` with a long, random value:
 ```env
 DATABASE_URL="file:./prisma/dev.db"
 JWT_SECRET="replace-with-a-long-random-secret"
+CORS_ORIGINS="http://localhost:5173"
 ```
+
+`CORS_ORIGINS` accepts a comma-separated list of exact frontend origins, such as
+`https://music.example.com,https://admin.example.com`.
 
 Then prepare Prisma:
 

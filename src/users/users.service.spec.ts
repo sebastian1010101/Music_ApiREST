@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { hash } from 'bcrypt';
 import { instanceToPlain } from 'class-transformer';
