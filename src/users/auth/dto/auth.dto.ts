@@ -7,12 +7,12 @@ export class AuthDto {
     example: 'username@gmail.com',
     description: 'email of the user already created',
   })
-  email: string;
+  email!: string;
 
   @IsString()
   @ApiProperty({
     example: '12345',
     description: 'password of user already created',
   })
-  password: string;
+  password!: string;
 }

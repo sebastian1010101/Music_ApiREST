@@ -15,43 +15,35 @@ export class TracksService {
 
   async create(body: CreateTrackDto) {
     await this.bandServices.findOne(body.bandId);
-
-    const trackEntity = new TrackEntity(body);
-    const createdTrack = await this.prisma.tracks.create({ data: trackEntity });
+    const createdTrack = await this.prisma.tracks.create({ data: body });
     return plainToInstance(TrackEntity, createdTrack);
   }
 
   async findAll() {
-    return await this.prisma.tracks.findMany();
+    const tracks = await this.prisma.tracks.findMany();
+    return plainToInstance(TrackEntity, tracks);
   }
 
   async findOne(trackId: string) {
-    const findTrack = await this.prisma.tracks.findFirst({
+    const track = await this.prisma.tracks.findUnique({
       where: { id: trackId },
     });
-    if (!findTrack) {
-      throw new NotFoundException('Track not found.');
-    }
-    return findTrack;
+    if (!track) throw new NotFoundException('Track not found.');
+    return plainToInstance(TrackEntity, track);
   }
 
   async update(trackId: string, update: UpdateTrackDto) {
     await this.findOne(trackId);
-
-    const newData = await this.prisma.tracks.update({
+    if (update.bandId) await this.bandServices.findOne(update.bandId);
+    const updatedTrack = await this.prisma.tracks.update({
       where: { id: trackId },
       data: update,
     });
-    return newData;
+    return plainToInstance(TrackEntity, updatedTrack);
   }
 
   async delete(trackId: string) {
-    const remove = await this.prisma.tracks.delete({
-      where: { id: trackId },
-    });
-    if (!remove) {
-      throw new NotFoundException('Track not found');
-    }
-    return remove;
+    await this.findOne(trackId);
+    await this.prisma.tracks.delete({ where: { id: trackId } });
   }
 }

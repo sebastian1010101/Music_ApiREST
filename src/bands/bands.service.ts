@@ -2,51 +2,40 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateBandDto } from './dto/create-band.dto';
 import { BandEntity } from './entities/band.entity';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { UpdateBandDto } from './dto/update-band.dto';
-import { UUID } from 'crypto';
 
 @Injectable()
 export class BandServices {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(body: CreateBandDto) {
-    const bandInstance = new BandEntity(body);
-
-    const createBand = this.prisma.bands.create({
-      data: bandInstance,
-    });
-    return plainToInstance(BandEntity, createBand);
+    const createdBand = await this.prisma.bands.create({ data: body });
+    return plainToInstance(BandEntity, createdBand);
   }
 
   async findAll() {
-    return await this.prisma.bands.findMany();
+    const bands = await this.prisma.bands.findMany();
+    return plainToInstance(BandEntity, bands);
   }
 
   async findOne(id: string) {
-    const findId = await this.prisma.bands.findFirst({
-      where: { id },
-    });
-    if (!findId) throw new NotFoundException('Band id not found.');
-    return findId;
+    const band = await this.prisma.bands.findUnique({ where: { id } });
+    if (!band) throw new NotFoundException('Band id not found.');
+    return plainToInstance(BandEntity, band);
   }
 
   async update(bandId: string, data: UpdateBandDto) {
     await this.findOne(bandId);
-
-    const update = await this.prisma.bands.update({
+    const updatedBand = await this.prisma.bands.update({
       where: { id: bandId },
       data,
     });
-    return plainToInstance(BandEntity, update);
+    return plainToInstance(BandEntity, updatedBand);
   }
 
   async delete(bandId: string) {
-    const remove = await this.prisma.bands.delete({
-      where: { id: bandId },
-    });
-    if (!remove) {
-      throw new NotFoundException('bandId not found');
-    }
+    await this.findOne(bandId);
+    await this.prisma.bands.delete({ where: { id: bandId } });
   }
 }

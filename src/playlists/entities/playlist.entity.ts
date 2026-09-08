@@ -11,27 +11,27 @@ export class PlaylistEntity extends BaseIDEntity {
     example: 'playlist 1st',
     description: 'title of playlist',
   })
-  title: string;
+  title!: string;
 
   @ApiProperty({
     readOnly: true,
     example: '2024-11-02T21:46:02.505Z',
     description: 'data of playlist creation',
   })
-  readonly createdAt: Date;
+  readonly createdAt!: Date;
 
   @ApiProperty({
     readOnly: true,
     example: '2024-12-02T21:46:02.505Z',
     description: 'data of update',
   })
-  readonly updatedAt: Date;
+  readonly updatedAt!: Date;
 
   @ApiProperty({
     example: '3e24234e-16bc-4294-8479-495172cee2d5',
     description: 'the corresponding user id',
   })
-  userId: string;
+  userId!: string;
 
   constructor(props: Partial<PlaylistEntity>) {
     super();

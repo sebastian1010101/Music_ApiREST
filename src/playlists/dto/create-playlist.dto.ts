@@ -9,5 +9,5 @@ export class CreatePlaylistDto {
     example: 'playlist 1st',
     description: 'Required string, max length 50 chars',
   })
-  title: string;
+  title!: string;
 }

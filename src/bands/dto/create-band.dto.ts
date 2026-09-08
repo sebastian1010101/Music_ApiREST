@@ -8,7 +8,7 @@ export class CreateBandDto {
     example: 'The band number 1',
     description: 'Required String, cant be empty',
   })
-  name: string;
+  name!: string;
 
   @IsInt()
   @IsPositive()
@@ -16,5 +16,5 @@ export class CreateBandDto {
     example: 2006,
     description: 'Required Int, positive numbers',
   })
-  formatYear: number;
+  formatYear!: number;
 }

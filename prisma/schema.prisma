@@ -5,49 +5,53 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 model Bands {
-  id String @id @default(uuid())
-  name String
-  formatYear Int @map("formatYear")
-  tracks Tracks[]
+  id         String   @id @default(uuid())
+  name       String
+  formatYear Int      @map("formatYear")
+  tracks     Tracks[]
+
   @@map("bands")
 }
 
 model Tracks {
-  id String @id @default(uuid())
-  title String
-  length Int
-  bandId String @map("bandId")
-  band Bands @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  id       String      @id @default(uuid())
+  title    String
+  length   Int
+  bandId   String      @map("bandId")
+  band     Bands       @relation(fields: [bandId], references: [id], onDelete: Cascade)
   playlist Playlists[]
+
   @@map("tracks")
 }
+
 model User {
-  id String @id @default(uuid())
-  username String @default("user")
-  email String @unique
-  password String
+  id        String      @id @default(uuid())
+  username  String      @default("user")
+  email     String      @unique
+  password  String
   playlists Playlists[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("users")
 }
 
 model Playlists {
-  id String @id @default(uuid())
-  title String
+  id        String   @id @default(uuid())
+  title     String
   createdAt DateTime @default(now()) @map("created")
   updatedAt DateTime @updatedAt @map("updated")
-  userId String @map("userId")
-  user User @relation(fields: [userId], references: [id])
-  tracks Tracks[]
+  userId    String   @map("userId")
+  user      User     @relation(fields: [userId], references: [id])
+  tracks    Tracks[]
 }

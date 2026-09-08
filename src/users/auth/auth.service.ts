@@ -1,8 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { compare } from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDto } from './dto/auth.dto';
-import { LoginEntity } from './entities/auth.entity';
+import { AuthEntity } from './entities/auth.entity';
 
 @Injectable()
 export class AuthService {
@@ -11,25 +12,19 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  async login(body: AuthDto) {
-    const userEntity = new LoginEntity(body);
-
-    const findEmail = await this.prisma.user.findUnique({
-      where: {
-        email: body.email,
-      },
+  async login(body: AuthDto): Promise<AuthEntity> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: body.email },
     });
-    if (!findEmail) {
-      throw new UnauthorizedException('Email not found');
+    const passwordMatches = user
+      ? await compare(body.password, user.password)
+      : false;
+    if (!user || !passwordMatches) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    await userEntity.comparePass(findEmail.password);
-
     return {
-      token: await this.jwt.signAsync({
-        sub: findEmail.id,
-        email: findEmail.email,
-      }),
+      token: await this.jwt.signAsync({ sub: user.id, email: user.email }),
     };
   }
 }

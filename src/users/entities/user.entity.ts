@@ -1,7 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { CreateUserDto } from '../dto/create-user.dto';
 import { BaseIDEntity } from 'src/utils/base.id.entity';
-import { hash } from 'bcrypt';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserEntity extends BaseIDEntity {
@@ -16,38 +14,34 @@ export class UserEntity extends BaseIDEntity {
     example: 'my_username',
     description: 'the name of user',
   })
-  username: string;
+  username!: string;
 
   @ApiProperty({
     example: 'username@gmail.com',
     description: 'email of the user',
   })
-  email: string;
+  email!: string;
 
   @ApiProperty({
     example: '2024-10-30T02:11:17.668Z',
     description: 'Data of creation',
   })
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty({
     example: '2025-10-30T02:11:17.668Z',
     description: 'Updated data of user',
   })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Exclude()
   @ApiProperty({
     writeOnly: true,
   })
-  password: string;
+  password!: string;
 
-  constructor(props: CreateUserDto) {
+  constructor(props?: Partial<UserEntity>) {
     super();
     Object.assign(this, props);
-  }
-
-  async hashPassword() {
-    this.password = await hash(this.password, 10);
   }
 }

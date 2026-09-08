@@ -3,13 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreatePlaylistDto } from './dto/create-playlist.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersService } from 'src/users/users.service';
 import { TracksService } from 'src/tracks/tracks.service';
 import { JwtAuthDto } from 'src/users/auth/jwt/jwt.dto';
-import { PlaylistEntity } from './entities/playlist.entity';
-import { TrackToPlistDto } from './dto/addTrackToPlaylist.dto';
+import { CreatePlaylistDto } from './dto/create-playlist.dto';
+import { UpdatePlaylistDto } from './dto/update-playlist.dto';
+import { AddTrackToPlaylistDto } from './dto/addTrackToPlaylist.dto';
 
 @Injectable()
 export class PlaylistsService {
@@ -20,50 +20,73 @@ export class PlaylistsService {
   ) {}
 
   async create(body: CreatePlaylistDto, user: JwtAuthDto) {
-    const data = new PlaylistEntity({ ...body, userId: user.userId });
-    const createPlaylist = await this.prisma.playlists.create({ data });
-    return createPlaylist;
-  }
-
-  async findAll() {
-    return await this.prisma.playlists.findMany();
-  }
-
-  async findOne(playlistId: string) {
-    const findPlaylist = await this.prisma.playlists.findUnique({
-      where: { id: playlistId },
+    await this.userService.findById(user.userId);
+    return this.prisma.playlists.create({
+      data: { ...body, userId: user.userId },
+      include: { tracks: true },
     });
+  }
 
-    if (!findPlaylist) {
-      throw new NotFoundException('playlist not found');
+  findAll(user: JwtAuthDto) {
+    return this.prisma.playlists.findMany({
+      where: { userId: user.userId },
+      include: { tracks: true },
+    });
+  }
+
+  async findOne(playlistId: string, user: JwtAuthDto) {
+    const playlist = await this.prisma.playlists.findUnique({
+      where: { id: playlistId },
+      include: { tracks: true },
+    });
+    if (!playlist) throw new NotFoundException('Playlist not found');
+    if (playlist.userId !== user.userId) {
+      throw new ForbiddenException('You do not own this playlist');
     }
-    return findPlaylist;
+    return playlist;
   }
 
   async addTrackToPlaylist(
     playlistId: string,
-    { trackId }: TrackToPlistDto,
+    { trackId }: AddTrackToPlaylistDto,
     user: JwtAuthDto,
   ) {
-    const playlistExists = await this.findOne(playlistId);
-    await this.userService.findById(user.userId);
-
-    if (playlistExists.userId !== user.userId) {
-      throw new ForbiddenException('Not permission');
-    }
-
+    await this.findOne(playlistId, user);
     await this.trackService.findOne(trackId);
-
-    const updatePlaylist = await this.prisma.playlists.update({
+    return this.prisma.playlists.update({
       where: { id: playlistId },
-      data: {
-        tracks: {
-          connect: { id: trackId },
-        },
-      },
+      data: { tracks: { connect: { id: trackId } } },
       include: { tracks: true },
     });
+  }
 
-    return updatePlaylist;
+  async update(playlistId: string, body: UpdatePlaylistDto, user: JwtAuthDto) {
+    await this.findOne(playlistId, user);
+    return this.prisma.playlists.update({
+      where: { id: playlistId },
+      data: body,
+      include: { tracks: true },
+    });
+  }
+
+  async delete(playlistId: string, user: JwtAuthDto) {
+    await this.findOne(playlistId, user);
+    await this.prisma.playlists.delete({ where: { id: playlistId } });
+  }
+
+  async removeTrackFromPlaylist(
+    playlistId: string,
+    trackId: string,
+    user: JwtAuthDto,
+  ) {
+    const playlist = await this.findOne(playlistId, user);
+    await this.trackService.findOne(trackId);
+    if (!playlist.tracks.some((track) => track.id === trackId)) {
+      throw new NotFoundException('Track is not in this playlist');
+    }
+    await this.prisma.playlists.update({
+      where: { id: playlistId },
+      data: { tracks: { disconnect: { id: trackId } } },
+    });
   }
 }

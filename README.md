@@ -1,222 +1,183 @@
-# 🎵 Music API REST
+# Music API REST
 
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+A REST API for managing bands, tracks, users, and personal playlists. It is built with NestJS, TypeScript, Prisma, SQLite, and JWT authentication.
 
-Una API RESTful para gestión musical construida con NestJS, TypeScript y Prisma. Permite gestionar bandas, canciones, usuarios y listas de reproducción con autenticación JWT.
+## Features
 
-## 🚀 Características
+- User registration and JWT login
+- Public band and track reads
+- Authenticated band and track writes
+- Owner-scoped playlists
+- DTO validation and unknown-field rejection
+- Password hashing and response redaction
+- Interactive OpenAPI documentation with Swagger
+- Unit and end-to-end tests
 
-- ✅ Autenticación de usuarios con JWT
-- 🎸 Gestión completa de bandas y canciones
-- 📝 Listas de reproducción personales
-- 🔒 Rutas protegidas con autenticación
-- 📚 Documentación automática con Swagger
-- 🗄️ Base de datos SQLite con Prisma ORM
+## Requirements
 
-## 📋 Requisitos Previos
+- Node.js `>=22.12.0 <26`
+- npm
 
-- Node.js (v18 o superior)
-- npm o yarn
-
-## 🛠️ Instalación
+## Installation
 
 ```bash
-# Clonar el repositorio
 git clone <repository-url>
 cd Music_ApiREST
-
-# Instalar dependencias
-npm install
+npm ci
+cp .env.example .env.local
 ```
 
-## ⚙️ Configuración
+Replace the placeholder JWT secret in `.env.local` with a long, random value:
 
-1. Crear archivo de variables de entorno:
-```bash
-cp .env.example .env
-```
-
-2. Configurar las variables en `.env`:
 ```env
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="your-secret-key-here"
+DATABASE_URL="file:./prisma/dev.db"
+JWT_SECRET="replace-with-a-long-random-secret"
 ```
 
-3. Generar Prisma client y migrar base de datos:
+Then prepare Prisma:
+
 ```bash
 npx prisma generate
-npx prisma db push
+npx prisma migrate deploy
 ```
 
-## 🏃‍♂️ Ejecutar el Proyecto
+## Running the API
 
 ```bash
-# Desarrollo (con recarga automática)
 npm run start:dev
+```
 
-# Producción
+The API listens on `http://localhost:3000`. Swagger UI is available at `http://localhost:3000/api`.
+
+For a production build:
+
+```bash
 npm run build
 npm run start:prod
 ```
 
-La API estará disponible en `http://localhost:3000`
+## Authentication
 
-## 📚 Documentación de la API
+Protected endpoints require an access token in the request header:
 
-Una vez iniciado el servidor, accede a la documentación interactiva:
-- **Swagger UI**: `http://localhost:3000/api`
-
-## 🔐 Autenticación
-
-La API utiliza JWT para autenticación. Las rutas protegidas requieren el header:
-
-```
+```text
 Authorization: Bearer <token>
 ```
 
-### Flujo de Autenticación
+Access tokens expire after one hour.
 
-1. **Registrar usuario**:
-```bash
-POST /auth/register
+### Register a user
+
+```http
+POST /users
+Content-Type: application/json
+
 {
-  "email": "user@example.com",
-  "password": "password123"
+  "username": "listener",
+  "email": "listener@example.com",
+  "password": "correct-horse-battery-staple"
 }
 ```
 
-2. **Iniciar sesión**:
-```bash
-POST /auth/login
+Passwords must contain between 12 and 72 UTF-8 bytes. Passwords and password hashes are never included in API responses.
+
+### Log in
+
+```http
+POST /auth
+Content-Type: application/json
+
 {
-  "email": "user@example.com", 
-  "password": "password123"
+  "email": "listener@example.com",
+  "password": "correct-horse-battery-staple"
 }
 ```
 
-3. **Usar el token** en rutas protegidas
+A successful login returns:
 
-## 🎵 Endpoints Principales
+```json
+{
+  "token": "<jwt-access-token>"
+}
+```
 
-### Bandas
-- `GET /bands` - Listar todas las bandas
-- `GET /bands/:id` - Obtener banda por ID
-- `POST /bands` - Crear nueva banda (requiere autenticación)
-- `PUT /bands/:id` - Actualizar banda (requiere autenticación)
-- `DELETE /bands/:id` - Eliminar banda (requiere autenticación)
+## Endpoints
 
-### Canciones
-- `GET /tracks` - Listar todas las canciones
-- `GET /tracks/:id` - Obtener canción por ID
-- `POST /tracks` - Crear nueva canción (requiere autenticación)
-- `PUT /tracks/:id` - Actualizar canción (requiere autenticación)
-- `DELETE /tracks/:id` - Eliminar canción (requiere autenticación)
+### Authentication and users
 
-### Usuarios
-- `GET /users/profile` - Obtener perfil de usuario (requiere autenticación)
-- `PUT /users/profile` - Actualizar perfil (requiere autenticación)
+| Method | Route            | Authentication | Description                        |
+| ------ | ---------------- | -------------- | ---------------------------------- |
+| `POST` | `/users`         | Public         | Register a user                    |
+| `POST` | `/auth`          | Public         | Log in and receive an access token |
+| `GET`  | `/users`         | Required       | List users                         |
+| `GET`  | `/users/:userId` | Required       | Get a user by UUID                 |
+
+### Bands
+
+| Method   | Route            | Authentication | Description                          |
+| -------- | ---------------- | -------------- | ------------------------------------ |
+| `GET`    | `/bands`         | Public         | List bands                           |
+| `GET`    | `/bands/:id`     | Public         | Get a band by UUID                   |
+| `POST`   | `/bands`         | Required       | Create a band                        |
+| `PATCH`  | `/bands/:bandId` | Required       | Partially update a band              |
+| `DELETE` | `/bands/:bandId` | Required       | Delete a band and its related tracks |
+
+### Tracks
+
+| Method   | Route              | Authentication | Description                         |
+| -------- | ------------------ | -------------- | ----------------------------------- |
+| `GET`    | `/tracks`          | Public         | List tracks                         |
+| `GET`    | `/tracks/:trackId` | Public         | Get a track by UUID                 |
+| `POST`   | `/tracks`          | Required       | Create a track for an existing band |
+| `PATCH`  | `/tracks/:trackId` | Required       | Partially update a track            |
+| `DELETE` | `/tracks/:trackId` | Required       | Delete a track                      |
 
 ### Playlists
-- `GET /playlists` - Listar playlists del usuario (requiere autenticación)
-- `POST /playlists` - Crear nueva playlist (requiere autenticación)
-- `GET /playlists/:id` - Obtener playlist por ID
-- `PUT /playlists/:id` - Actualizar playlist (requiere autenticación)
-- `DELETE /playlists/:id` - Eliminar playlist (requiere autenticación)
-- `POST /playlists/:id/tracks` - Agregar canción a playlist (requiere autenticación)
-- `DELETE /playlists/:id/tracks/:trackId` - Eliminar canción de playlist (requiere autenticación)
 
-## 📊 Modelo de Datos
+All playlist routes require authentication. Collection reads return only playlists owned by the authenticated user, and detail or mutation routes reject access to another user's playlist.
 
-```mermaid
-erDiagram
-    User ||--o{ Playlists : creates
-    Playlists ||--o{ Tracks : contains
-    Bands ||--o{ Tracks : has
-    
-    User {
-        string id PK
-        string email UK
-        string password
-        string username
-        datetime createdAt
-        datetime updatedAt
-    }
-    
-    Bands {
-        string id PK
-        string name
-        int formatYear
-    }
-    
-    Tracks {
-        string id PK
-        string title
-        int length
-        string bandId FK
-    }
-    
-    Playlists {
-        string id PK
-        string title
-        string userId FK
-        datetime createdAt
-        datetime updatedAt
-    }
-```
+| Method   | Route                                    | Description                             |
+| -------- | ---------------------------------------- | --------------------------------------- |
+| `GET`    | `/playlists`                             | List the authenticated user's playlists |
+| `GET`    | `/playlists/:playlistId`                 | Get an owned playlist                   |
+| `POST`   | `/playlists`                             | Create a playlist                       |
+| `PATCH`  | `/playlists/:playlistId`                 | Partially update an owned playlist      |
+| `DELETE` | `/playlists/:playlistId`                 | Delete an owned playlist                |
+| `POST`   | `/playlists/:playlistId/tracks`          | Add a track to an owned playlist        |
+| `DELETE` | `/playlists/:playlistId/tracks/:trackId` | Remove a track from an owned playlist   |
 
-## 🧪 Ejecutar Tests
+Successful delete operations return HTTP `204 No Content`.
+
+## Data model
+
+- A `Bands` record has many `Tracks`. Deleting a band cascades to its tracks.
+- A `Tracks` record belongs to one band and can belong to many playlists.
+- A `User` has many playlists.
+- A `Playlists` record belongs to one user and can contain many tracks.
+
+The Prisma schema is located at `prisma/schema.prisma`, and migrations are stored in `prisma/migrations`.
+
+## Quality checks
 
 ```bash
-# Unit tests
-npm run test
-
-# E2E tests  
-npm run test:e2e
-
-# Coverage
-npm run test:cov
-```
-
-## 🔧 Comandos Útiles
-
-```bash
-# Formatear código
-npm run format
-
-# Linter
-npm run lint
-
-# Build para producción
+npm run format:check
+npm run lint:check
+npm run typecheck
+npm test -- --runInBand
+npm run test:cov -- --runInBand
+npm run test:e2e -- --runInBand
 npm run build
-
-# Resetear base de datos
-npx prisma migrate reset
 ```
 
-## 📁 Estructura del Proyecto
+Unit tests are colocated with services under `src`. End-to-end tests use a uniquely named temporary SQLite database and do not modify `prisma/dev.db`.
 
-```
-src/
-├── bands/          # Módulo de gestión de bandas
-├── tracks/         # Módulo de gestión de canciones
-├── users/          # Módulo de autenticación y usuarios
-├── playlists/      # Módulo de playlists
-├── prisma/         # Servicio de base de datos
-├── utils/          # Utilidades compartidas
-├── app.module.ts   # Módulo principal
-└── main.ts         # Punto de entrada
+To apply formatting or lint fixes locally:
+
+```bash
+npm run format
+npm run lint
 ```
 
-## 🤝 Contribuir
+## Technology versions
 
-1. Fork el proyecto
-2. Crear una rama (`git checkout -b feature/amazing-feature`)
-3. Commit los cambios (`git commit -m 'Add amazing feature'`)
-4. Push a la rama (`git push origin feature/amazing-feature`)
-5. Abrir un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está licenciado bajo la Licencia MIT.
+The project uses NestJS 11, Prisma 7 with the `better-sqlite3` driver adapter, TypeScript 5.9, Jest 30, and ESLint 10 flat configuration. Package versions are declared in `package.json` and resolved reproducibly in `package-lock.json`.

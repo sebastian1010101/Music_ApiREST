@@ -6,25 +6,25 @@ export class TrackEntity extends BaseIDEntity {
   @ApiProperty({
     readOnly: true,
   })
-  public declare readonly id: string;
+  declare public readonly id: string;
 
   @IsString()
   @ApiProperty({
     example: 'My Track N1 ',
   })
-  title: string;
+  title!: string;
 
   @IsInt()
   @ApiProperty({
     example: 200,
   })
-  length: number;
+  length!: number;
 
   @IsUUID('4')
   @ApiProperty({
     example: '36e722e1-ade5-4a70-bee6-b80ff9c2a40c',
   })
-  bandId: string;
+  bandId!: string;
 
   constructor(props: { title: string; length: number; bandId: string }) {
     super();

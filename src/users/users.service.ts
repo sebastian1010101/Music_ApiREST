@@ -1,50 +1,41 @@
 import {
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserEntity } from './entities/user.entity';
+import { hash } from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
-import { JwtAuthDto } from './auth/jwt/jwt.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
+
   async create(create: CreateUserDto) {
-    const verifyUniqueEmail = await this.prisma.user.findUnique({
+    const existingUser = await this.prisma.user.findUnique({
       where: { email: create.email },
     });
+    if (existingUser) throw new ConflictException('Email already in use');
 
-    if (verifyUniqueEmail) {
-      throw new ConflictException('Email already in use');
-    }
-
-    const userEntity = new UserEntity(create);
-    await userEntity.hashPassword();
-    const createUser = await this.prisma.user.create({ data: userEntity });
-
-    return createUser;
+    const password = await hash(create.password, 10);
+    const createdUser = await this.prisma.user.create({
+      data: { ...create, password },
+    });
+    return plainToInstance(UserEntity, createdUser);
   }
 
   async findAll() {
-    const findUsers = await this.prisma.user.findMany();
-    return plainToInstance(UserEntity, findUsers);
+    const users = await this.prisma.user.findMany();
+    return plainToInstance(UserEntity, users);
   }
 
   async findById(userId: string) {
-    const findUser = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
     });
-    if (!findUser) {
-      throw new NotFoundException('User not found');
-    }
-    return plainToInstance(UserEntity, findUser);
+    if (!user) throw new NotFoundException('User not found');
+    return plainToInstance(UserEntity, user);
   }
 }

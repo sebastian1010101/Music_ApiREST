@@ -7,19 +7,19 @@ export class BandEntity extends BaseIDEntity {
     description: 'Unique uuid (v4)',
     readOnly: true,
   })
-  public declare readonly id: string;
+  declare public readonly id: string;
 
   @ApiProperty({
     example: 'my band name',
     description: 'the title of the band',
   })
-  public name: string;
+  public name!: string;
 
   @ApiProperty({
     example: 2006,
     description: 'year of the band foundation',
   })
-  public formatYear: number;
+  public formatYear!: number;
 
   constructor(props: { name: string; formatYear: number }) {
     super();
